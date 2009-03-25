@@ -1,7 +1,7 @@
 package Business::OnlinePayment::PaymenTech;
 use strict;
 
-our $VERSION = '1.2';
+our $VERSION = '1.3';
 our $AUTHORITY = 'cpan:GPHAT';
 
 =head1 NAME
@@ -94,15 +94,18 @@ sub submit {
     my $req;
     if($content{'action'} eq 'Authorization Only') {
         $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
-        $req->MessageType('A');
         $self->_addBillTo($req);
-
+        # Authorize
+        $req->MessageType('A');
         $req->CurrencyCode('840');
+
         $req->Exp($content{'exp_date'});
+        $req->AccountNum($content{'card_number'});
 
     } elsif($content{'action'} eq 'Capture') {
         $req = requestBuilder()->make(CC_MARK_FOR_CAPTURE_REQUEST());
         $req->TxRefNum($content{'tx_ref_num'});
+
     } elsif($content{'action'} eq 'Force Authorization Only') {
         # ?
     } elsif($content{'action'} eq 'Authorization and Capture') {
@@ -113,11 +116,13 @@ sub submit {
         $req->CurrencyCode('840');
 
         $req->Exp($content{'exp_date'});
+        $req->AccountNum($content{'card_number'});
 
     } elsif($content{'action'} eq 'Credit') {
         $req = requestBuilder()->make(ECOMMERCE_REFUND_REQUEST());
         $req->CurrencyCode('840');
-        $req->Amount($content{'amount'});
+        $req->AccountNum($content{'card_number'});
+
     } else {
         die('Unknown Action: '.$content{'action'}."\n");
     }
@@ -128,10 +133,12 @@ sub submit {
         $req->traceNumber($content{'trace_number'});
     }
     $req->OrderID($content{'invoice_number'});
-    $req->AccountNum($content{'card_number'});
+
     $req->Amount(sprintf("%012d", $content{'amount'}));
     $req->TzCode($content{'TzCode'} || '706');
-    $req->Comments($content{'comments'} || '');
+    if(exists($content{'comments'})) {
+        $req->Comments($content{'comments'} || '');
+    }
 
     $self->{'request'} = $req;
 
@@ -144,6 +151,11 @@ sub _post {
     my $self = shift();
 
     my %content = $self->content();
+
+    if($self->test_transaction()) {
+        print STDERR $self->{request}->renderAsXML."\n";
+    }
+
 
     my $gw_resp = gatewayTP()->process($self->{'request'});
 }
@@ -190,7 +202,9 @@ sub _addBillTo {
     $req->AVSstate($content{'state'});
     $req->AVSzip($content{'zip'});
     $req->AVScountryCode($content{'country'});
-    $req->AVSphoneNum($content{'phone_number'});
+    if(exists($content{'phone_number'})) {
+        $req->AVSphoneNum($content{'phone_number'});
+    }
 }
 
 =head1 AUTHOR
