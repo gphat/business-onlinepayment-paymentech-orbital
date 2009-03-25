@@ -1,5 +1,9 @@
 Revision history for Perl extension Business::OnlinePayment::PaymenTech.
 
+1.2
+   - Integrate patch from Garth Sainio fixing all the typos I introduced when
+     I hand applied his last patch. :(
+
 1.1.0  Mon Feb 23, 2009
    - Swap out hardcoded values for BIN and TZCode with configurable ones that
      merely default to their previously hardcoded values. (Garth Sainio)

@@ -1,7 +1,7 @@
 package Business::OnlinePayment::PaymenTech;
 use strict;
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.2';
 our $AUTHORITY = 'cpan:GPHAT';
 
 =head1 NAME
@@ -124,14 +124,14 @@ sub submit {
 
     $req->BIN($content{'BIN'} || '000001');
     $req->MerchantID($self->{'merchantid'});
-    if(exists($content{'trace_number'}) && $content{'trace_number'} =~ /^\d+$/)) {
+    if(exists($content{'trace_number'}) && $content{'trace_number'} =~ /^\d+$/) {
         $req->traceNumber($content{'trace_number'});
     }
     $req->OrderID($content{'invoice_number'});
     $req->AccountNum($content{'card_number'});
     $req->Amount(sprintf("%012d", $content{'amount'}));
     $req->TzCode($content{'TzCode'} || '706');
-    $req->Comments($content{'comments'}, || '');
+    $req->Comments($content{'comments'} || '');
 
     $self->{'request'} = $req;
 
@@ -199,7 +199,7 @@ Cory 'G' Watson <gphat@cpan.org>
 
 =head2 CONTRIBUTORS
 
-Garth Sainio
+Garth Sainio <gsainio@cpan.org>
 
 =head1 SEE ALSO
 
