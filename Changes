@@ -1,0 +1,11 @@
+Revision history for Perl extension Business::OnlinePayment::PaymenTech.
+
+1.1.0  Mon Feb 23, 2009
+   - Swap out hardcoded values for BIN and TZCode with configurable ones that
+     merely default to their previously hardcoded values. (Garth Sainio)
+   - Add CountryCode and Phone Number to AVS. (Garth Sainio)
+   - Die with an error if an unrecognized action is supplied. (Garth Sainio)
+   - Include treaceNumber if set (Garth Sainio)
+
+1.0  Fri Feb 29 08:33:01 2008
+   - release
