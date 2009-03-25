@@ -4,7 +4,7 @@ Revision history for Perl extension Business::OnlinePayment::PaymenTech.
    - Don't blindly set AVSphoneNum and Comments... only send them if they are
      set (helps older API install)
    - Print raw XML request when test_transaction is true
-   - Don't sent account number when requesting a capture
+   - Don't set account number when requesting a capture
 
 1.2
    - Integrate patch from Garth Sainio fixing all the typos I introduced when
