@@ -1,7 +1,7 @@
 package Business::OnlinePayment::PaymenTech;
 use strict;
 
-our $VERSION = '1.3';
+our $VERSION = '1.4';
 our $AUTHORITY = 'cpan:GPHAT';
 
 =head1 NAME
