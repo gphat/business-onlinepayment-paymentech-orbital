@@ -12,7 +12,7 @@ Business::OnlinePayment::PaymenTech - PaymenTech backend for Business::OnlinePay
 
   my %options;
   $options{'merchantid'} = '1234';
-  my $tx = new Business::OnlinePayment('PaymenTech', %options);
+  my $tx = Business::OnlinePayment->new('PaymenTech', %options);
   $tx->content(
     username        => 'username',
     password        => 'pass',
@@ -26,10 +26,10 @@ Business::OnlinePayment::PaymenTech - PaymenTech backend for Business::OnlinePay
     name            => 'Test User',
     amount          => 100 # $1.00
   );
-  $tx->submit();
+  $tx->submit;
 
-  if($tx->is_success()) {
-    print "Card processed successfully: ".$tx->authorization()."\n";
+  if($tx->is_success) {
+    print "Card processed successfully: ".$tx->authorization."\n";
   } else {
     print "Card was rejected: ".$tx->error_message()."\n";
   }
@@ -37,6 +37,12 @@ Business::OnlinePayment::PaymenTech - PaymenTech backend for Business::OnlinePay
 =head1 SUPPORTED ACTIONS
 
 Authorization Only, Authorization and Capture, Capture, Credit
+
+By default, Business::Online::PaymenTech uses the MOTO API calls in the
+PaymenTech library.  If you specifically set the C<ecommerce> option to a true
+value in your C<content> then the CC API will be used where applicable,
+notably Authorization, Authorization and Capture and Refund. (Actually,
+refund uses ECOMMERCE_REFUND when C<ecommerce> is true).
 
 =head1 DESCRIPTION
 
@@ -73,7 +79,7 @@ use base qw(Business::OnlinePayment);
 
 use Paymentech::SDK;
 use Paymentech::eCommerce::RequestBuilder 'requestBuilder';
-use Paymentech::eCommerce::RequestTypes qw (MOTO_AUTHORIZE_REQUEST CC_MARK_FOR_CAPTURE_REQUEST ECOMMERCE_REFUND_REQUEST);
+use Paymentech::eCommerce::RequestTypes qw (CC_AUTHORIZE_REQUEST MOTO_AUTHORIZE_REQUEST CC_MARK_FOR_CAPTURE_REQUEST ECOMMERCE_REFUND_REQUEST MOTO_REFUND_REQUEST);
 use Paymentech::eCommerce::TransactionProcessor ':alias';
 
 sub set_defaults {
@@ -93,7 +99,11 @@ sub submit {
 
     my $req;
     if($content{'action'} eq 'Authorization Only') {
-        $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
+        if(lc($content{industry}) eq 'ecommerce') {
+            $req = requestBuilder()->make(CC_AUTHORIZE_REQUEST());
+        } else {
+            $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
+        }
         $self->_addBillTo($req);
         # Authorize
         $req->MessageType('A');
@@ -103,13 +113,18 @@ sub submit {
         $req->AccountNum($content{'card_number'});
 
     } elsif($content{'action'} eq 'Capture') {
+
         $req = requestBuilder()->make(CC_MARK_FOR_CAPTURE_REQUEST());
         $req->TxRefNum($content{'tx_ref_num'});
 
     } elsif($content{'action'} eq 'Force Authorization Only') {
         # ?
     } elsif($content{'action'} eq 'Authorization and Capture') {
-        $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
+        if(lc($content{industry}) eq 'ecommerce') {
+            $req = requestBuilder()->make(CC_AUTHORIZE_REQUEST());
+        } else {
+            $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
+        }
         $self->_addBillTo($req);
         # Authorize and Capture
         $req->MessageType('AC');
@@ -119,8 +134,12 @@ sub submit {
         $req->AccountNum($content{'card_number'});
 
     } elsif($content{'action'} eq 'Credit') {
-        $req = requestBuilder()->make(ECOMMERCE_REFUND_REQUEST());
-        $req->CurrencyCode('840');
+        if(lc($content{industry}) eq 'ecommerce') {
+            $req = requestBuilder()->make(ECOMMERCE_REFUND_REQUEST());
+        } else {
+            $req = requestBuilder()->make(MOTO_REFUND_REQUEST());
+        }
+        $req->CurrencyCode($content{'currency_code'} || '840');
         $req->AccountNum($content{'card_number'});
 
     } else {
