@@ -100,6 +100,10 @@ sub submit {
     if($content{'action'} eq 'Authorization Only') {
         if(lc($content{industry}) eq 'ecommerce') {
             $req = requestBuilder()->make(CC_AUTHORIZE_REQUEST());
+            if(defined($content{'cvn'})) {
+                $req->CardSecVal($content{'cvn'});
+            }
+
         } else {
             $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
         }
@@ -121,6 +125,10 @@ sub submit {
     } elsif($content{'action'} eq 'Authorization and Capture') {
         if(lc($content{industry}) eq 'ecommerce') {
             $req = requestBuilder()->make(CC_AUTHORIZE_REQUEST());
+            if(defined($content{'cvn'})) {
+                $req->CardSecVal($content{'cvn'});
+            }
+
         } else {
             $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
         }
@@ -213,9 +221,6 @@ sub _addBillTo {
 
     my %content = $self->content();
 
-    if(defined($content{'cvn'})) {
-        $req->CardSecVal($content{'cvn'});
-    }
     $req->AVSname($content{'name'});
     $req->AVSaddress1($content{'address'});
     $req->AVSaddress2($content{'address2'});
