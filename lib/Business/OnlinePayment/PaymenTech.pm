@@ -1,8 +1,7 @@
 package Business::OnlinePayment::PaymenTech;
 use strict;
 
-our $VERSION = '1.4';
-our $AUTHORITY = 'cpan:GPHAT';
+our $VERSION = '1.5';
 
 =head1 NAME
 
@@ -19,7 +18,7 @@ Business::OnlinePayment::PaymenTech - PaymenTech backend for Business::OnlinePay
     invoice_number  => $orderid,
     trace_number    => $trace_num, # Optional
     action          => 'Authorization Only',
-    cvv2val         => 123,
+    cvn             => 123, # cvv2, cvc2, cid
     card_number     => '1234123412341234',
     exp_date        => '0410',
     address         => '123 Test Street',
@@ -79,7 +78,7 @@ use base qw(Business::OnlinePayment);
 
 use Paymentech::SDK;
 use Paymentech::eCommerce::RequestBuilder 'requestBuilder';
-use Paymentech::eCommerce::RequestTypes qw (CC_AUTHORIZE_REQUEST MOTO_AUTHORIZE_REQUEST CC_MARK_FOR_CAPTURE_REQUEST ECOMMERCE_REFUND_REQUEST MOTO_REFUND_REQUEST);
+use Paymentech::eCommerce::RequestTypes qw(CC_AUTHORIZE_REQUEST MOTO_AUTHORIZE_REQUEST CC_MARK_FOR_CAPTURE_REQUEST ECOMMERCE_REFUND_REQUEST MOTO_REFUND_REQUEST);
 use Paymentech::eCommerce::TransactionProcessor ':alias';
 
 sub set_defaults {
@@ -214,6 +213,9 @@ sub _addBillTo {
 
     my %content = $self->content();
 
+    if(defined($content{'cvn'})) {
+        $req->CardSecVal($content{'cvn'});
+    }
     $req->AVSname($content{'name'});
     $req->AVSaddress1($content{'address'});
     $req->AVSaddress2($content{'address2'});
