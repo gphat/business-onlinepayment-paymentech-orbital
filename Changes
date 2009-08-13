@@ -1,5 +1,8 @@
 Revision history for Perl extension Business::OnlinePayment::PaymenTech.
 
+1.6
+   - Add response method (which takes in ResponseCode)
+
 1.5
    - Add cvn handling and fix "cvv2val" in the docs that didn't work
 

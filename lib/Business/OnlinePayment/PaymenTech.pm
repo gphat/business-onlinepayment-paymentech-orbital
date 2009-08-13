@@ -1,7 +1,7 @@
 package Business::OnlinePayment::PaymenTech;
 use strict;
 
-our $VERSION = '1.5';
+our $VERSION = '1.6';
 
 =head1 NAME
 
@@ -68,6 +68,7 @@ a transition from one processor to another.
  
 Some extra getters are provided.  They are:
 
+ response       - Get the response code
  avs_response   - Get the AVS response
  cvv2_response  - Get the CVV2 response
  transaction_id - Get the PaymenTech assigned Transaction Id
@@ -87,7 +88,7 @@ sub set_defaults {
     $self->{'_content'} = {};
 
     $self->build_subs(
-        qw(avs_response cvv2_response transaction_id card_proc_resp)
+        qw(response avs_response cvv2_response transaction_id card_proc_resp)
     );
 }
 
@@ -203,6 +204,7 @@ sub _processResponse {
 
     $self->transaction_id($resp->value('TxRefNum'));
     $self->cvv2_response($resp->CVV2ResponseCode());
+    $self->response($resp->ResponseCode());
     $self->avs_response($resp->AVSResponseCode());
     $self->authorization($resp->value('AuthCode'));
     $self->error_message($resp->status());
