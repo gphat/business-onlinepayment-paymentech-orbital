@@ -30,7 +30,7 @@ Business::OnlinePayment::PaymenTech::Orbital - PaymenTech Orbital backend for Bu
   if($tx->is_success) {
     print "Card processed successfully: ".$tx->authorization."\n";
   } else {
-    print "Card was rejected: ".$tx->error_message()."\n";
+    print "Card was rejected: ".$tx->error_message."\n";
   }
 
 =head1 SUPPORTED ACTIONS
@@ -102,7 +102,7 @@ use Paymentech::eCommerce::RequestTypes qw(CC_AUTHORIZE_REQUEST MOTO_AUTHORIZE_R
 use Paymentech::eCommerce::TransactionProcessor ':alias';
 
 sub set_defaults {
-    my $self = shift();
+    my $self = shift;
 
     $self->{'_content'} = {};
 
@@ -112,11 +112,16 @@ sub set_defaults {
 }
 
 sub submit {
-    my $self = shift();
+    my $self = shift;
 
-    my %content = $self->content();
+    my %content = $self->content;
 
     my $req;
+
+    if(defined($content{sd_merchant_name})) {
+        $self->add_soft_descriptor($req);
+    }
+
     if($content{'action'} eq 'Authorization Only') {
         if(lc($content{industry}) eq 'ecommerce') {
             $req = requestBuilder()->make(CC_AUTHORIZE_REQUEST());
@@ -127,7 +132,7 @@ sub submit {
         } else {
             $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
         }
-        $self->_addBillTo($req);
+        $self->_add_bill_to($req);
         # Authorize
         $req->MessageType('A');
         $req->CurrencyCode('840');
@@ -152,7 +157,7 @@ sub submit {
         } else {
             $req = requestBuilder()->make(MOTO_AUTHORIZE_REQUEST());
         }
-        $self->_addBillTo($req);
+        $self->_add_bill_to($req);
         # Authorize and Capture
         $req->MessageType('AC');
         $req->CurrencyCode('840');
@@ -188,17 +193,17 @@ sub submit {
 
     $self->{'request'} = $req;
 
-    $self->_post();
+    $self->_post;
 
-    $self->_processResponse();
+    $self->_process_response;
 }
 
 sub _post {
-    my $self = shift();
+    my $self = shift;
 
-    my %content = $self->content();
+    my %content = $self->content;
 
-    if($self->test_transaction()) {
+    if($self->test_transaction) {
         print STDERR $self->{request}->renderAsXML."\n";
     }
 
@@ -206,29 +211,29 @@ sub _post {
     my $gw_resp = gatewayTP()->process($self->{'request'});
 }
 
-sub _processResponse {
-    my $self = shift();
+sub _process_response {
+    my $self = shift;
 
-    my $resp = $self->{'request'}->response();
+    my $resp = $self->{'request'}->response;
 
     unless(defined($resp)) {
         $self->is_success(0);
-        $self->error_message($self->error_message()." No response.");
+        $self->error_message($self->error_message." No response.");
         return;
     }
 
-    if($self->test_transaction()) {
-        print STDERR $resp->raw();
+    if($self->test_transaction) {
+        print STDERR $resp->raw;
     }
 
     $self->transaction_id($resp->value('TxRefNum'));
-    $self->cvv2_response($resp->CVV2ResponseCode());
-    $self->response($resp->ResponseCode());
-    $self->avs_response($resp->AVSResponseCode());
+    $self->cvv2_response($resp->CVV2ResponseCode);
+    $self->response($resp->ResponseCode);
+    $self->avs_response($resp->AVSResponseCode);
     $self->authorization($resp->value('AuthCode'));
-    $self->error_message($resp->status());
+    $self->error_message($resp->status);
 
-    if(!$resp->approved()) {
+    if(!$resp->approved) {
         $self->is_success(0);
         return;
     }
@@ -236,11 +241,10 @@ sub _processResponse {
     $self->is_success(1);
 }
 
-sub _addBillTo {
-    my $self = shift();
-    my $req = shift();
+sub _add_bill_to {
+    my ($self, $req) = @_;
 
-    my %content = $self->content();
+    my %content = $self->content;
 
     $req->AVSname($content{'name'});
     $req->AVSaddress1($content{'address'});
@@ -254,7 +258,7 @@ sub _addBillTo {
     }
 }
 
-sub _addSoftDescriptor {
+sub _add_soft_descriptor {
     my ($self, $req) = @_;
 
     my %content = $self->content;
