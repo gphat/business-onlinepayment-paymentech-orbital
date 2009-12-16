@@ -118,10 +118,6 @@ sub submit {
 
     my $req;
 
-    if(defined($content{sd_merchant_name})) {
-        $self->add_soft_descriptor($req);
-    }
-
     if($content{'action'} eq 'Authorization Only') {
         if(lc($content{industry}) eq 'ecommerce') {
             $req = requestBuilder()->make(CC_AUTHORIZE_REQUEST());
@@ -176,6 +172,10 @@ sub submit {
 
     } else {
         die('Unknown Action: '.$content{'action'}."\n");
+    }
+
+    if(defined($content{sd_merchant_name})) {
+        $self->_add_soft_descriptor($req);
     }
 
     $req->BIN($content{'BIN'} || '000001');
@@ -262,12 +262,12 @@ sub _add_soft_descriptor {
     my ($self, $req) = @_;
 
     my %content = $self->content;
-    $req->SDMerchantName($content('sd_merchant_name'));
-    $req->SDProductDescription($content('sd_product_description'));
-    $req->SDMerchantCity($content('sd_merchant_city'));
-    $req->SDMerchantPhone($content('sd_merchant_phone'));
-    $req->SDMerchantURL($content('sd_merchant_url'));
-    $req->SDMerchantEmail($content('sd_merchant_email'));
+    $req->SDMerchantName($content{'sd_merchant_name'});
+    $req->SDProductDescription($content{'sd_product_description'});
+    $req->SDMerchantCity($content{'sd_merchant_city'});
+    $req->SDMerchantPhone($content{'sd_merchant_phone'});
+    $req->SDMerchantURL($content{'sd_merchant_url'});
+    $req->SDMerchantEmail($content{'sd_merchant_email'});
 }
 
 =head1 AUTHOR
