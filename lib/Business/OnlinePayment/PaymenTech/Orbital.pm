@@ -33,6 +33,17 @@ Business::OnlinePayment::PaymenTech::Orbital - PaymenTech Orbital backend for Bu
     print "Card was rejected: ".$tx->error_message."\n";
   }
 
+=head1 DESCRIPTION
+
+Business::OnlinePayment::PaymenTech::Orbital allows you to utilize
+PaymenTech's Orbital SDK credit card services.  You will need to install the
+Perl Orbital SDK for this to work.
+
+This module was previous named Business::OnlinePayment::PaymenTech but was
+renamed since it is specific to the Orbital SDK product.
+
+For detailed information see L<Business::OnlinePayment>.
+
 =head1 SUPPORTED ACTIONS
 
 Authorization Only, Authorization and Capture, Capture, Credit
@@ -42,14 +53,6 @@ the PaymenTech library.  If you specifically set the C<ecommerce> option to a
 true value in your C<content> then the CC API will be used where applicable,
 notably Authorization, Authorization and Capture and Refund. (Actually,
 refund uses ECOMMERCE_REFUND when C<ecommerce> is true).
-
-=head1 DESCRIPTION
-
-Business::OnlinePayment::PaymenTech::Orbital allows you to utilize
-PaymenTech's Orbital SDK credit card services.  You will need to install the
-Perl Orbital SDK for this to work.
-
-For detailed information see L<Business::OnlinePayment>.
 
 =head1 NOTES
 
@@ -84,7 +87,7 @@ optionally, any of the the following fields:
 =item BIN defaults 001
 
 =back
- 
+
 Some extra getters are provided.  They are:
 
  response       - Get the response code
@@ -174,7 +177,7 @@ sub submit {
         die('Unknown Action: '.$content{'action'}."\n");
     }
 
-    if(defined($content{sd_merchant_name})) {
+    if(defined($content{sd_merchant_name}) && $content{'action'} ne 'Capture') {
         $self->_add_soft_descriptor($req);
     }
 

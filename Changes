@@ -2,6 +2,7 @@ Revision history for Perl extension Business::OnlinePayment::PaymenTech::Orbital
 
 1.7
    - Renamed to Business::OnlinePayment::PaymenTech::Orbital
+   - Added support for soft descriptors
 
 1.6
    - Add response method (which takes in ResponseCode)
